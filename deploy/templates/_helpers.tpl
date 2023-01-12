@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "nextjs-k8s.name" -}}
+{{- define "test-app-nextjs.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "nextjs-k8s.fullname" -}}
+{{- define "test-app-nextjs.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "nextjs-k8s.chart" -}}
+{{- define "test-app-nextjs.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "nextjs-k8s.labels" -}}
-helm.sh/chart: {{ include "nextjs-k8s.chart" . }}
-{{ include "nextjs-k8s.selectorLabels" . }}
+{{- define "test-app-nextjs.labels" -}}
+helm.sh/chart: {{ include "test-app-nextjs.chart" . }}
+{{ include "test-app-nextjs.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "nextjs-k8s.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "nextjs-k8s.name" . }}
+{{- define "test-app-nextjs.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "test-app-nextjs.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "nextjs-k8s.serviceAccountName" -}}
+{{- define "test-app-nextjs.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "nextjs-k8s.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "test-app-nextjs.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
