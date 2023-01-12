@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "nextjs-k8s.fullname" . }}
+  name: {{ include "test-app-nextjs.fullname" . }}
   labels:
-    {{- include "nextjs-k8s.labels" . | nindent 4 }}
+    {{- include "test-app-nextjs.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "nextjs-k8s.fullname" . }}
+    name: {{ include "test-app-nextjs.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:
