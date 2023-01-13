@@ -3,12 +3,12 @@ entries:
   test-app-nextjs:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-01-12T20:43:21.470438244-05:00"
+    created: "2023-01-13T16:02:22.274751783-05:00"
     description: A Helm chart for Kubernetes
-    digest: 888ece0879e10bb5d7b9a03ea77dc9311b3490e57c1961132af0f9c930033eec
+    digest: fa0c3328ea140a0fad9bb583d8ffdf34e42e7aceb920b0eda418d526f27d59dc
     name: test-app-nextjs
     type: application
     urls:
     - test-app-nextjs-0.1.0.tgz
     version: 0.1.0
-generated: "2023-01-12T20:43:21.469302608-05:00"
+generated: "2023-01-13T16:02:22.27420864-05:00"
