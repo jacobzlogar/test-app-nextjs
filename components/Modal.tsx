@@ -93,7 +93,6 @@ export class MyModal extends React.Component<ModalProps, ModalState> {
                           value={this.state.userName}
                           onChange={this.handleUserNameUpdate.bind(this)}
                           className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                          placeholder="?"
                         />
                       </div>
                     </div>
@@ -105,7 +104,7 @@ export class MyModal extends React.Component<ModalProps, ModalState> {
                         onClick={this.termsAccept.bind(this)}
                         className="disabled:bg-gray-100 inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                       >
-                        Cool
+                        Submit
                       </button>
                     </div>
                   </Dialog.Panel>
