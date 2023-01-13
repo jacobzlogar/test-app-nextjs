@@ -1,80 +1,109 @@
-import React from 'react';
-import { PhotoshopPicker } from 'react-color';
+import React from "react";
+import Pusher from "pusher-js";
+import State from "pusher-js/types/src/core/http/state";
 
-type PickerProps = {
-  background: string;
-}
-type PickerState = {
-  background: string;
-}
-class PickerComponent extends React.Component<PickerProps, PickerState> {
-  constructor(props: PickerProps) {
+type ChatProps = {
+  name: string;
+};
+
+type ChatState = {
+  name: string;
+  messages: string[];
+  message: string;
+};
+
+class Chat extends React.Component<ChatProps, ChatState> {
+  public pusher: Pusher;
+  constructor(props: ChatProps) {
     super(props);
     this.state = {
-      background: props.background,
+      name: props.name,
+      messages: [],
+      message: "",
     };
-  }
-  handleChangeComplete = (color, event) => {
-    console.log(color);
-    this.setState(function(state, rops) {
-      return {
-        background: color.hex
-      }
+    this.pusher = new Pusher("app-key", {
+      appId: "app-id",
+      key: "app-key",
+      wsHost: "127.0.0.1",
+      wsPort: 6001,
+      secret: "app-secret",
+      forceTLS: false,
+      encrypted: true,
+      cluster: "localhost",
+      disableStats: true,
+      enabledTransports: ["ws", "wss"],
     });
+    this.pusher.channels.add("chat-room", this.pusher);
+    //this.pusher.authenticateUser(socketId, userData);
+    this.pusher.channel("chat-room").bind(
+      "client-message",
+      function (data) {
+        this.setState({ messages: [data.message] });
+      }.bind(this)
+    );
   }
 
+  handleMessage(event) {
+    this.pusher.channel("chat-room").trigger("client-message", {
+      user: "bob",
+      message: event.target.value,
+    });
+    this.setState({ message: event.target.value });
+  }
+  async foo() {
+    const form = new FormData();
+    form.append("value", this.state.message);
+    await fetch("http://localhost:8080/chat/message", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: JSON.stringify({ value: this.state.message }),
+    })
+      .then((res) => res.text())
+      .then((result) => result);
+    //this.channel.trigger("client-my-event", this.state.message);
+  }
   render() {
     return (
-      <div className="flex justify-center backdrop-saturate-125 my-5">
-        <PhotoshopPicker color={this.state.background} onChangeComplete={this.handleChangeComplete} />;
-      </div>
-    )
-  }
-}
-
-class Card extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  foo() {
-    fetch("http://localhost:3001/ping", {
-      method: "GET",
-      credentials: "include",
-    }).then((res) => res.json())
-      .then((result) => {
-        console.log(result);
-      })
-  }
-  render() {
-    return (
-      <div className="flex justify-center backdrop-saturate-125">
-        <div className="rounded-lg shadow-lg bg-white max-w-sm">
-          <a href="#!">
-            <img className="rounded-t-lg" src="https://mdbootstrap.com/img/new/standard/nature/184.jpg" alt="" />
-          </a>
-          <div className="p-6">
-            <h5 className="text-gray-900 text-xl font-medium mb-2">Card title</h5>
-            <p className="text-gray-700 text-base mb-4">
-            </p>
-            <button type="button" onClick={this.foo} className="inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out">
-              Button
-            </button>
+      <div>
+        <div>{this.state.messages[0]}</div>
+        <div className="flex justify-center place-items-center backdrop-saturate-125">
+          <div className="rounded-lg shadow-lg content-center bg-white max-w-sm w-96">
+            <div className="m-5">
+              <div className="relative mt-1 rounded-md shadow-sm">
+                <textarea
+                  name="chat"
+                  id="chat"
+                  rows="6"
+                  onChange={this.handleMessage.bind(this)}
+                  className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  placeholder=""
+                />
+                <button
+                  disabled={true}
+                  onClick={this.foo.bind(this)}
+                  className="group mt-2 relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                >
+                  Submit
+                </button>
+              </div>
+            </div>{" "}
           </div>
         </div>
       </div>
-    )
+    );
   }
 }
 
 export default function Home() {
-  const pickerState = {
-    background: "fff"
+  const chatProps = {
+    name: "bob",
   };
   return (
-    <div className='m-5 grid lg:grid-cols-3'>
-      <PickerComponent {...pickerState} />
-      <Card />
+    <div className="my-5 grid h-screen place-items-center">
+      <Chat {...chatProps} />
     </div>
-  )
+  );
 }
