@@ -22,13 +22,9 @@ class Chat extends React.Component<ChatProps, ChatState> {
       message: "",
     };
     this.pusher = new Pusher("app-key", {
-      appId: "app-id",
-      key: "app-key",
       wsHost: "127.0.0.1",
       wsPort: 6001,
-      secret: "app-secret",
       forceTLS: false,
-      encrypted: true,
       cluster: "localhost",
       disableStats: true,
       enabledTransports: ["ws", "wss"],
@@ -76,7 +72,6 @@ class Chat extends React.Component<ChatProps, ChatState> {
                 <textarea
                   name="chat"
                   id="chat"
-                  rows="6"
                   onChange={this.handleMessage.bind(this)}
                   className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   placeholder=""
