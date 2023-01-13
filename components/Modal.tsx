@@ -35,7 +35,7 @@ export class MyModal extends React.Component<ModalProps, ModalState> {
     this.setState({ open: true });
   }
   termsAccept() {
-    this.props.termsAccept(true);
+    this.props.termsAccept();
     this.setState({ loggedIn: true });
     this.closeModal();
   }
