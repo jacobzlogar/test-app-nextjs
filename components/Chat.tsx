@@ -35,7 +35,7 @@ export class Chat extends React.Component<ChatProps, ChatState> {
       },
     };
     this.pusher = new Pusher("app-key", {
-      wsHost: "soketi-test-app.default.svc.cluster.local",
+      wsHost: "soketi-test-app-headless.default.svc.cluster.local",
       wsPort: 6001,
       forceTLS: false,
       cluster: "localhost",
