@@ -15,7 +15,7 @@ type ModalProps = {
   termsAccept(): void;
 };
 
-export class MyModal extends React.Component<ModalProps, ModalState> {
+export class AuthModal extends React.Component<ModalProps, ModalState> {
   constructor(props) {
     super(props);
     this.handleUserNameUpdate = this.handleUserNameUpdate.bind(this);

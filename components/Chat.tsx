@@ -35,7 +35,7 @@ export class Chat extends React.Component<ChatProps, ChatState> {
       },
     };
     this.pusher = new Pusher("app-key", {
-      wsHost: "127.0.0.1",
+      wsHost: "soketi-test-app.default.svc.cluster.local",
       wsPort: 6001,
       forceTLS: false,
       cluster: "localhost",
@@ -92,7 +92,11 @@ export class Chat extends React.Component<ChatProps, ChatState> {
                     </div>
                     <div className="flex-1 space-y-6 py-1 text-xs grid row">
                       <div>
-                        from <span className="font-bold">{message.user.userName}</span> at {message.sentAt}
+                        from{" "}
+                        <span className="font-bold">
+                          {message.user.userName}
+                        </span>{" "}
+                        at {message.sentAt}
                       </div>
                       {message.text}
                     </div>
@@ -108,14 +112,14 @@ export class Chat extends React.Component<ChatProps, ChatState> {
               <div className="relative rounded-md shadow-sm">
                 <div className="relative">
                   <div className="grid grid-row mb-4">
-                      <span className="font-small text-xs text-black">
-                        <span className="font-bold">name: </span>
-                        {this.state.user.userName}
-                      </span>
-                      <span className="font-small text-xs text-black">
-                        <span className="font-bold">id: </span>
-                        {this.state.user.id}
-                      </span>
+                    <span className="font-small text-xs text-black">
+                      <span className="font-bold">name: </span>
+                      {this.state.user.userName}
+                    </span>
+                    <span className="font-small text-xs text-black">
+                      <span className="font-bold">id: </span>
+                      {this.state.user.id}
+                    </span>
                   </div>
                 </div>
                 <textarea

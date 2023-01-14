@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { nanoid } from "nanoid";
 import { Chat } from "../components/Chat";
-import { MyModal } from "../components/Modal";
+import { AuthModal } from "../components/Modal";
 
 export class User {
   constructor(public userName: string, public id: string) {}
@@ -48,7 +48,7 @@ class Dashboard extends React.Component<any, DashboardState> {
     localStorage.setItem("userName", user.userName);
     localStorage.setItem("userId", user.id);
   }
-  handleUserNameUpdate(value) {
+  handleUserNameUpdate(value: string) {
     this.setState({
       userName: value,
     });
@@ -58,7 +58,7 @@ class Dashboard extends React.Component<any, DashboardState> {
     if (this.state.loggedIn) {
       return <Chat user={this.state.user} />;
     }
-    return <MyModal {...this.state} />;
+    return <AuthModal {...this.state} />;
   }
 }
 
