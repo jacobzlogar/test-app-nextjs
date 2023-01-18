@@ -1,17 +1,20 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Pusher from "pusher-js";
 import State from "pusher-js/types/src/core/http/state";
 import { nanoid } from "nanoid";
 import { User } from "../pages/index";
+import MeiliSearch from "meilisearch";
 
 type ChatProps = {
   user: User;
+  search: MeiliSearch;
 };
 
 type Message = {
   id: string;
   user: User;
   text: string;
+  indexedAt?: number;
   sentAt?: number;
 };
 
@@ -21,8 +24,28 @@ type ChatState = {
   message?: Message;
 };
 
+/* export default function ChatV2(props: ChatProps) {
+*   const [user, setUser] = useState<User>(this.props.user);
+*   const [message, setMessage] = useState<Message>({
+*     user: this.props.user,
+*     id: nanoid(8),
+*     text: null,
+*   });
+*   const [messages, setMessages] = useState<Message[]>([]);
+*
+*   search;
+*   useEffect(() => {
+*     const res = this.search
+*       .index("messages")
+*       .addDocuments([this.state.message])
+*       .then((res) => return res);
+*     setMessages(res);
+*   }, messages);
+* }
+*  */
 export class Chat extends React.Component<ChatProps, ChatState> {
   public pusher: Pusher;
+  public search: MeiliSearch;
   constructor(props: ChatProps) {
     super(props);
     this.state = {
@@ -30,13 +53,14 @@ export class Chat extends React.Component<ChatProps, ChatState> {
       messages: [],
       message: {
         user: props.user,
-        id: nanoid(),
+        id: nanoid(8),
         text: "",
       },
     };
+    this.search = props.search;
     this.pusher = new Pusher("app-key", {
-      wsHost: "soketi.local",
-      wsPort: 6001,
+      wsHost: process.env.NEXT_PUBLIC_CLUSTER_IP,
+      wsPort: parseInt(process.env.NEXT_PUBLIC_MINIKUBE_SOKETI_PORT),
       forceTLS: false,
       cluster: "localhost",
       disableStats: true,
@@ -64,6 +88,42 @@ export class Chat extends React.Component<ChatProps, ChatState> {
     );
   }
 
+  async getDocuments() {
+    return this.search
+      .index("messages")
+      .search("", {
+        sort: ["sentAt:desc"],
+      })
+      .then((res) => {
+        return res.slice(0, 3);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+
+  async indexMessage(event) {
+    this.setState({
+      message: {
+        indexedAt: Date.now(),
+        ...this.state.message,
+      },
+    });
+    this.search
+      .index("messages")
+      .addDocuments([this.state.message])
+      .then((res) => console.log(res));
+    this.setState({
+      message: {
+        text: "",
+        id: nanoid(8),
+        user: this.state.user,
+      },
+      messages: await this.getDocuments.bind(this),
+    });
+    event.preventDefault();
+  }
+
   handleMessage(event) {
     let message = this.state.message;
     message.text = event.target.value;
@@ -81,10 +141,16 @@ export class Chat extends React.Component<ChatProps, ChatState> {
             {this.state.messages.map(function (message: Message) {
               return (
                 <div
-                  className="border border-gray-300 bg-white shadow rounded-md p-4 max-w-sm w-full mx-auto mb-4"
+                  className="bg-white dark:bg-gray-900 dark:text-white shadow rounded-md p-4 max-w-sm w-full mx-auto mb-4"
                   key={message.id}
                 >
-                  <div className="animate-pulse flex space-x-4">
+                  <div
+                    className={
+                      !message.indexedAt
+                        ? "animate-pulse flex space-x-4"
+                        : "flex space-x-4"
+                    }
+                  >
                     <div className="relative inline-flex items-center justify-center w-6 h-6 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600">
                       <span className="font-small text-xs text-gray-600 dark:text-gray-300">
                         {message.user.userName.charAt(0).toUpperCase()}
@@ -107,32 +173,25 @@ export class Chat extends React.Component<ChatProps, ChatState> {
           </span>
         )}
         <div className="flex justify-center place-items-center backdrop-saturate-125">
-          <div className="rounded-lg shadow-lg content-center bg-white max-w-sm w-96">
+          <div className="rounded-lg shadow-lg content-center bg-white dark:bg-gray-900 max-w-sm w-96">
             <div className="m-5">
               <div className="relative rounded-md shadow-sm">
-                <div className="relative">
-                  <div className="grid grid-row mb-4">
-                    <span className="font-small text-xs text-black">
-                      <span className="font-bold">name: </span>
-                      {this.state.user.userName}
-                    </span>
-                    <span className="font-small text-xs text-black">
-                      <span className="font-bold">id: </span>
-                      {this.state.user.id}
-                    </span>
-                  </div>
-                </div>
-                <textarea
-                  name="chat"
-                  id="chat"
-                  onChange={this.handleMessage.bind(this)}
-                  value={this.state.message.text}
-                  className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm mb-3"
-                  placeholder=""
-                />
-                <button className="group mt-2 relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                  Submit
-                </button>
+                <form onSubmit={this.indexMessage.bind(this)}>
+                  <textarea
+                    name="chat"
+                    id="chat"
+                    onChange={this.handleMessage.bind(this)}
+                    value={this.state.message.text}
+                    className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm mb-3 bg-white dark:bg-gray-300"
+                    placeholder=""
+                  />
+                  <button
+                    onClick={this.indexMessage.bind(this)}
+                    className="group mt-2 relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 dark:bg-indigo-900 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
+                    Submit
+                  </button>
+                </form>
               </div>
             </div>
           </div>
