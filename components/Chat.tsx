@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Pusher from "pusher-js";
-import State from "pusher-js/types/src/core/http/state";
+import { Config } from "../composables/config";
 import { nanoid } from "nanoid";
 import { User } from "../pages/index";
-import MeiliSearch from "meilisearch";
+import { MessageApi } from "../composables/api";
 
 type ChatProps = {
   user: User;
-  search: MeiliSearch;
 };
 
 type Message = {
   id: string;
   user: User;
-  text: string;
+  text?: string;
   indexedAt?: number;
   sentAt?: number;
 };
@@ -24,179 +23,86 @@ type ChatState = {
   message?: Message;
 };
 
-/* export default function ChatV2(props: ChatProps) {
-*   const [user, setUser] = useState<User>(this.props.user);
-*   const [message, setMessage] = useState<Message>({
-*     user: this.props.user,
-*     id: nanoid(8),
-*     text: null,
-*   });
-*   const [messages, setMessages] = useState<Message[]>([]);
-*
-*   search;
-*   useEffect(() => {
-*     const res = this.search
-*       .index("messages")
-*       .addDocuments([this.state.message])
-*       .then((res) => return res);
-*     setMessages(res);
-*   }, messages);
-* }
-*  */
-export class Chat extends React.Component<ChatProps, ChatState> {
-  public pusher: Pusher;
-  public search: MeiliSearch;
-  constructor(props: ChatProps) {
-    super(props);
-    this.state = {
-      user: props.user,
-      messages: [],
-      message: {
-        user: props.user,
-        id: nanoid(8),
-        text: "",
-      },
-    };
-    this.search = props.search;
-    this.pusher = new Pusher("app-key", {
-      wsHost: process.env.NEXT_PUBLIC_CLUSTER_IP,
-      wsPort: parseInt(process.env.NEXT_PUBLIC_MINIKUBE_SOKETI_PORT),
+export default function Chat(props: ChatProps) {
+  const [messageApi, setMessageApi] = useState<MessageApi>(new MessageApi());
+  const [config, setConfig] = useState<Config>(new Config());
+  const [user, setUser] = useState<User>(props.user);
+  const [pusher, setPusher] = useState<Pusher>();
+  useEffect(() => {
+    const pusher = new Pusher("app-key", {
+      wsHost: config.url(),
+      wsPort: parseInt(config.soketi_port()),
       forceTLS: false,
       cluster: "localhost",
       disableStats: true,
       enabledTransports: ["ws", "wss"],
     });
-    this.pusher.channels.add("chat-room", this.pusher);
-    //this.pusher.authenticateUser(socketId, userData);
-    this.pusher.channel("chat-room").bind(
-      "client-message",
-      function (data: Message) {
-        let msgs = this.state.messages;
-        let messages = msgs.map((m: Message) => {
-          if (m.id === data.id) {
-            return data;
-          } else {
-            return m;
-          }
-        });
-        let existing = messages.find((m: Message) => m.id === data.id);
-        if (!existing) {
-          messages.push(data);
-        }
-        this.setState({ messages: messages });
-      }.bind(this)
-    );
-  }
+    pusher.channels.add("chat-room", pusher);
+    setPusher(pusher);
+  }, []);
 
-  async getDocuments() {
-    return this.search
-      .index("messages")
-      .search("", {
-        sort: ["sentAt:desc"],
-      })
-      .then((res) => {
-        return res.slice(0, 3);
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  }
+  const [message, setMessage] = useState<Message>({
+    user: props.user,
+    id: nanoid(8),
+  });
 
-  async indexMessage(event) {
-    this.setState({
-      message: {
-        indexedAt: Date.now(),
-        ...this.state.message,
-      },
+  const resetMessage = async () => {
+    const update = { ...message, text: null, id: nanoid(8) };
+    setMessage((message) => ({
+      ...message,
+      ...update,
+    }));
+  };
+
+  const submitMessage = async () => {
+    messageApi.storeMessage({
+      userId: user.id,
+      text: message.text,
     });
-    this.search
-      .index("messages")
-      .addDocuments([this.state.message])
-      .then((res) => console.log(res));
-    this.setState({
-      message: {
-        text: "",
-        id: nanoid(8),
-        user: this.state.user,
-      },
-      messages: await this.getDocuments.bind(this),
-    });
-    event.preventDefault();
-  }
+    await resetMessage();
+  };
 
-  handleMessage(event) {
-    let message = this.state.message;
-    message.text = event.target.value;
-    if (!message.sentAt) {
-      message.sentAt = Date.now();
-    }
-    this.pusher.channel("chat-room").trigger("client-message", { ...message });
-    this.setState({ message: message });
-  }
-  render() {
-    return (
-      <div>
-        {this.state.messages && this.state.messages.length > 0 && (
-          <span>
-            {this.state.messages.map(function (message: Message) {
-              return (
-                <div
-                  className="bg-white dark:bg-gray-900 dark:text-white shadow rounded-md p-4 max-w-sm w-full mx-auto mb-4"
-                  key={message.id}
-                >
-                  <div
-                    className={
-                      !message.indexedAt
-                        ? "animate-pulse flex space-x-4"
-                        : "flex space-x-4"
-                    }
-                  >
-                    <div className="relative inline-flex items-center justify-center w-6 h-6 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600">
-                      <span className="font-small text-xs text-gray-600 dark:text-gray-300">
-                        {message.user.userName.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="flex-1 space-y-6 py-1 text-xs grid row">
-                      <div>
-                        from{" "}
-                        <span className="font-bold">
-                          {message.user.userName}
-                        </span>{" "}
-                        at {message.sentAt}
-                      </div>
-                      {message.text}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </span>
-        )}
-        <div className="flex justify-center place-items-center backdrop-saturate-125">
-          <div className="rounded-lg shadow-lg content-center bg-white dark:bg-gray-900 max-w-sm w-96">
-            <div className="m-5">
-              <div className="relative rounded-md shadow-sm">
-                <form onSubmit={this.indexMessage.bind(this)}>
-                  <textarea
-                    name="chat"
-                    id="chat"
-                    onChange={this.handleMessage.bind(this)}
-                    value={this.state.message.text}
-                    className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm mb-3 bg-white dark:bg-gray-300"
-                    placeholder=""
-                  />
-                  <button
-                    onClick={this.indexMessage.bind(this)}
-                    className="group mt-2 relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 dark:bg-indigo-900 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  >
-                    Submit
-                  </button>
-                </form>
-              </div>
-            </div>
+  const handleChange = async (e) => {
+    const update = { ...message, text: e.target.value };
+    setMessage((message) => ({
+      ...message,
+      ...update,
+    }));
+    pusher.channel("chat-room").trigger("client-message", { ...message });
+  };
+
+  const [messages, setMessages] = useState<Message[]>([]);
+  return (
+    <div className="flex justify-center place-items-center backdrop-saturate-125">
+      <div className="rounded-lg shadow-lg content-center bg-white dark:bg-gray-900 max-w-sm w-96">
+        <div className="m-5">
+          <div className="relative rounded-md shadow-sm">
+            <form onSubmit={resetMessage}>
+              <textarea
+                name="chat"
+                id="chat"
+                onInput={(event) => {
+                  handleChange(event);
+                  console.log(message);
+                }}
+                defaultValue={message?.text}
+                value={message?.text ?? ""}
+                className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm mb-3 bg-white dark:bg-gray-300"
+                placeholder=""
+              />
+              <button
+                onClick={(event) => {
+                  event.preventDefault();
+                  submitMessage();
+                }}
+                className="group mt-2 relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 dark:bg-indigo-900 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                Submit
+              </button>
+            </form>
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 }

@@ -1,17 +1,14 @@
-import { MeiliSearch } from "meilisearch";
 import React from "react";
 import { User } from "../pages";
 import { Search } from "./Search";
 
 type NavProps = {
   user: User;
-  search: MeiliSearch;
 };
 type NavState = {
   user: User;
 };
 export class Nav extends React.Component<NavProps, NavState> {
-  public client: MeiliSearch;
   constructor(props: NavProps) {
     super(props);
     this.state = {
@@ -60,7 +57,13 @@ export class Nav extends React.Component<NavProps, NavState> {
                     ></path>
                   </svg>
                 </div>
-                <Search client={this.props.search} />
+                <input
+                  type="text"
+                  name="email"
+                  id="topbar-search"
+                  className="bg-gray-50 border font-mono border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  placeholder="Search"
+                />
               </div>
             </form>
           </div>

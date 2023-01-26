@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { nanoid } from "nanoid";
-import { Chat } from "../components/Chat";
+import Chat from "../components/Chat";
 import { Nav } from "../components/Nav";
 import { AuthModal } from "../components/Modal";
-import MeiliSearch from "meilisearch";
 
 export class User {
   constructor(public userName: string, public id: string) {}
@@ -19,7 +18,6 @@ type DashboardState = {
 };
 
 class Dashboard extends React.Component<any, DashboardState> {
-  public searchClient: MeiliSearch;
   constructor(props) {
     super(props);
     this.state = {
@@ -27,10 +25,6 @@ class Dashboard extends React.Component<any, DashboardState> {
       handleUserNameUpdate: this.handleUserNameUpdate.bind(this),
       termsAccept: this.termsAccept.bind(this),
     };
-
-    this.searchClient = new MeiliSearch({
-      host: `${process.env.NEXT_PUBLIC_CLUSTER_IP}:${process.env.NEXT_PUBLIC_CLUSTER_MEILISEARCH_PORT}`,
-    });
   }
 
   componentDidMount() {
