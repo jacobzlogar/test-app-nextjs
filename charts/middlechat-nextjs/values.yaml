@@ -5,14 +5,14 @@
 replicaCount: 1
 
 image:
-  repository: jacobzlogar/nextjs-helm-test
+  repository: public.ecr.aws/q6r2m3o7/middlechat-nextjs
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
 imagePullSecrets: []
-nameOverride: "test-app-nextjs"
-fullnameOverride: "test-app-nextjs"
+nameOverride: "middlechat-nextjs"
+fullnameOverride: "middlechat-nextjs"
 
 serviceAccount:
   # Specifies whether a service account should be created

@@ -61,9 +61,9 @@ class Dashboard extends React.Component<any, DashboardState> {
     if (this.state.loggedIn) {
       return (
         <div className="bg-gray-100 dark:bg-gray-700">
-          <Nav user={this.state.user} search={this.searchClient} />
+          <Nav user={this.state.user} />
           <div className="my-5 grid h-screen place-items-center">
-            <Chat user={this.state.user} search={this.searchClient} />
+            <Chat user={this.state.user} />
           </div>
         </div>
       );

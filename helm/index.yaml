@@ -1,14 +1,14 @@
 apiVersion: v1
 entries:
-  test-app-nextjs:
+  middlechat-nextjs:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-01-14T14:35:13.647500247-05:00"
+    created: "2023-01-26T16:49:01.314299636-05:00"
     description: A Helm chart for Kubernetes
-    digest: 35c667330d8b7aba6dd60e259df775ad72b2016caf2a106f9b0e14cc18c0045f
-    name: test-app-nextjs
+    digest: ea6ad81b75827dda8c7aff431a13c3a403f23119001ac781688df4b8626c2ba7
+    name: middlechat-nextjs
     type: application
     urls:
-    - test-app-nextjs-0.1.0.tgz
+    - middlechat-nextjs-0.1.0.tgz
     version: 0.1.0
-generated: "2023-01-14T14:35:13.646005043-05:00"
+generated: "2023-01-26T16:49:01.313971335-05:00"

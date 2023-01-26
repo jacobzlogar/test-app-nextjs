@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "test-app-nextjs.fullname" . }}
+  name: {{ include "middlechat-nextjs.fullname" . }}
   labels:
-    {{- include "test-app-nextjs.labels" . | nindent 4 }}
+    {{- include "middlechat-nextjs.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "test-app-nextjs.selectorLabels" . | nindent 4 }}
+    {{- include "middlechat-nextjs.selectorLabels" . | nindent 4 }}

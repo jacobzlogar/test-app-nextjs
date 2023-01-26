@@ -31,7 +31,7 @@ export default function Chat(props: ChatProps) {
   useEffect(() => {
     const pusher = new Pusher("app-key", {
       wsHost: config.url(),
-      wsPort: parseInt(config.soketi_port()),
+      wsPort: 6001,
       forceTLS: false,
       cluster: "localhost",
       disableStats: true,
