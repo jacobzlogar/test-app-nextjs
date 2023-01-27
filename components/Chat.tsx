@@ -19,12 +19,12 @@ export type Message = {
   sentAt?: number;
 };
 
-export const MessageContext = createContext([])
+export const MessageContext = createContext([]);
 export default function Chat(props: ChatProps) {
   const [messageApi, setMessageApi] = useState<MessageApi>(new MessageApi());
   const [user, setUser] = useState<User>(props.user);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [pusher, setPusher] = useState<Pusher>(createPusher());
+  const [pusher, setPusher] = useState(createPusher());
   useEffect(() => {
     pusher.channels.add("chat-room", pusher);
     pusher
@@ -72,9 +72,9 @@ export default function Chat(props: ChatProps) {
   };
   return (
     <>
-        <MessageContext.Provider value={messages}>
-          <ChatBubbles />
-        </MessageContext.Provider>
+      <MessageContext.Provider value={messages}>
+        <ChatBubbles />
+      </MessageContext.Provider>
       <div className="flex justify-center place-items-center backdrop-saturate-125">
         <div className="rounded-lg shadow-lg content-center bg-white dark:bg-gray-900 max-w-sm w-96">
           <div className="m-5">
